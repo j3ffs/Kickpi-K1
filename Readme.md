@@ -18,8 +18,8 @@ For Armbian build, place the patch in build/userpatches/kernel/archive/rockchip6
 * M.2
 * MiniPCI (not tested)
 * GIPO (not tested)
-* Audio (partial)
-* Headset (partial)
+* Mic Onboard
+* Headset and Mic
 * Wifi
 * Ethernet 0
 * Ethernet 1
@@ -34,3 +34,8 @@ For Armbian build, place the patch in build/userpatches/kernel/archive/rockchip6
 * Other display connections
 * SIM card (unknown)
 * Gyroscope (not on board?)
+
+
+Example build command
+
+./compile.sh build BOARD=kickpi-k1 BRANCH=edge BUILD_DESKTOP=yes BUILD_MINIMAL=no DESKTOP_APPGROUPS_SELECTED='browsers desktop_tools internet multimedia remote_desktop' DESKTOP_ENVIRONMENT=xfce DESKTOP_ENVIRONMENT_CONFIG_NAME=config_base INSTALL_HEADERS=yes KERNEL_CONFIGURE=no KERNEL_GIT=shallow RELEASE=noble

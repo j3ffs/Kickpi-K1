@@ -64,9 +64,22 @@
 
 	rk809-sound {
 		compatible = "simple-audio-card";
-		simple-audio-card,format = "i2s";
 		simple-audio-card,name = "Analog RK809";
+		simple-audio-card,format = "i2s";
 		simple-audio-card,mclk-fs = <256>;
+
+		simple-audio-card,widgets =
+			"Headphone", "Headphone Jack",
+			"Speaker", "Onboard Speaker",
+			"Microphone", "Onboard Mic",
+			"Microphone", "Headset Mic";
+
+		simple-audio-card,routing =
+			"Headphone Jack", "HPOL",
+			"Headphone Jack", "HPOR",
+			"Onboard Speaker", "SPKO",
+			"Onboard Mic", "MICL",
+			"Headset Mic", "MICR";
 
 		simple-audio-card,cpu {
 			sound-dai = <&i2s1_8ch>;
@@ -441,6 +454,9 @@
 		pinctrl-0 = <&pmic_int>, <&i2s1m0_mclk>;
 		system-power-controller;
 		#sound-dai-cells = <0>;
+
+		spk-ctl-gpios = <&gpio4 RK_PC6 GPIO_ACTIVE_HIGH>;
+
 		vcc1-supply = <&vcc3v3_sys>;
 		vcc2-supply = <&vcc3v3_sys>;
 		vcc3-supply = <&vcc3v3_sys>;
@@ -639,6 +655,8 @@
 				};
 			};
 		};
+
+
 	};
 };
 
@@ -807,7 +825,6 @@
 			rockchip,pins = <0 RK_PC6 RK_FUNC_GPIO &pcfg_pull_none>;
 		};
 	};
-
 };
 
 &pmu_io_domains {
@@ -899,10 +916,9 @@
 &uart8 {
 	status = "okay";
 	pinctrl-names = "default";
-	pinctrl-0 = <&uart8m0_xfer &uart8m0_ctsn>; // rts conflicts w eth0
-	// uart-has-rtscts; //enabled by def
+	pinctrl-0 = <&uart8m0_xfer &uart8m0_ctsn>;
 	dma-names = "tx", "rx";
-
+	
 	bluetooth {
         compatible = "realtek,rtl8822cs-bt";
         clocks = <&rk809 1>;
@@ -910,10 +926,11 @@
         enable-gpios = <&gpio3 RK_PA0 GPIO_ACTIVE_HIGH>;
         device-wake-gpios = <&gpio3 RK_PA1 GPIO_ACTIVE_HIGH>;
         host-wake-gpios = <&gpio3 RK_PA2 GPIO_ACTIVE_HIGH>;
-		max-speed = <1500000>; //prvent out of order messages
+		max-speed = <1500000>;
         pinctrl-names = "default";
         pinctrl-0 = <&bt_enable_h &bt_wake_h &bt_host_wake_h>;
     };
+	
 };
 
 &uart9 {
