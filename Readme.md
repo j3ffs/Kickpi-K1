@@ -27,10 +27,10 @@ For Armbian build, place the patch in build/userpatches/kernel/archive/rockchip6
 * GPU
 * JTAG Debug
 * Bluetooth
+* NPU (not tested - not supported by 6.19RC4)
 
 # Not Working
-* Mipi-csi camara
-* NPU
+* Mipi-csi camara (need adapter or supported 40 pin camera)
 * Other display connections
 * SIM card (unknown)
 * Gyroscope (not on board?)
@@ -40,3 +40,9 @@ For Armbian build, place the patch in build/userpatches/kernel/archive/rockchip6
 Example build command
 
 ./compile.sh build BOARD=kickpi-k1 BRANCH=edge BUILD_DESKTOP=yes BUILD_MINIMAL=no DESKTOP_APPGROUPS_SELECTED='browsers desktop_tools internet multimedia remote_desktop' DESKTOP_ENVIRONMENT=xfce DESKTOP_ENVIRONMENT_CONFIG_NAME=config_base INSTALL_HEADERS=yes KERNEL_CONFIGURE=no KERNEL_GIT=shallow RELEASE=noble
+
+#Enable NPU in Kernel
+CONFIG_ACCEL_ROCKET=y
+CONFIG_ACCEL_ROCKET_RK3568=y
+Not supported for rk3568 as of 6.19 RC4.
+

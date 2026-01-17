@@ -294,6 +294,51 @@
         >;
     };
 
+    soc {
+        #address-cells = <2>;
+        #size-cells = <2>;
+        ranges;
+
+        rknpu: npu@fde40000 {
+            compatible = "rockchip,rk3568-rknpu";
+            reg = <0x0 0xfde40000 0x0 0x10000>;
+
+            interrupts = <GIC_SPI 151 IRQ_TYPE_LEVEL_HIGH>;
+            interrupt-names = "rknpu";
+
+            clocks = <&cru CLK_NPU>,
+                     <&cru ACLK_NPU>,
+                     <&cru HCLK_NPU>;
+            clock-names = "clk", "aclk", "hclk";
+
+            resets = <&cru SRST_A_NPU>,
+                     <&cru SRST_H_NPU>;
+            reset-names = "srst_a", "srst_h";
+
+            power-domains = <&power RK3568_PD_NPU>;
+
+            iommus = <&rknpu_mmu>;
+
+            status = "okay";
+        };
+
+        rknpu_mmu: iommu@fde4b000 {
+            compatible = "rockchip,iommu-v2";
+            reg = <0x0 0xfde4b000 0x0 0x40>;
+
+            interrupts = <GIC_SPI 151 IRQ_TYPE_LEVEL_HIGH>;
+
+            clocks = <&cru ACLK_NPU>,
+                     <&cru HCLK_NPU>;
+            clock-names = "aclk", "iface";
+
+            power-domains = <&power RK3568_PD_NPU>;
+
+            #iommu-cells = <0>;
+
+            status = "okay";
+        };
+    };
 };
 
 &combphy0 {
