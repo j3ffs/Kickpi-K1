@@ -35,6 +35,8 @@ For Armbian build, place the patch in build/userpatches/kernel/archive/rockchip6
 * SIM card (unknown)
 * Gyroscope (not on board?)
 * Headset auto detection (not wired?)
+* Fan header
+* RTC battery
 
 
 Example build command
