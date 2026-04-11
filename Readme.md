@@ -37,6 +37,7 @@ For Armbian build, place the patch in build/userpatches/kernel/archive/rockchip6
 * Headset auto detection (not wired?)
 * Fan header
 * RTC battery
+* Speaker Connector (not tested)
 
 
 Example build command
