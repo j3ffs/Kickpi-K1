@@ -64,22 +64,9 @@
 
 	rk809-sound {
 		compatible = "simple-audio-card";
-		simple-audio-card,name = "Analog RK809";
 		simple-audio-card,format = "i2s";
+		simple-audio-card,name = "Analog RK809";
 		simple-audio-card,mclk-fs = <256>;
-
-		simple-audio-card,widgets =
-			"Headphone", "Headphone Jack",
-			"Speaker", "Onboard Speaker",
-			"Microphone", "Onboard Mic",
-			"Microphone", "Headset Mic";
-
-		simple-audio-card,routing =
-			"Headphone Jack", "HPOL",
-			"Headphone Jack", "HPOR",
-			"Onboard Speaker", "SPKO",
-			"Onboard Mic", "MICL",
-			"Headset Mic", "MICR";
 
 		simple-audio-card,cpu {
 			sound-dai = <&i2s1_8ch>;
@@ -195,12 +182,13 @@
 
 	vcc5v0_usb_hub: regulator-vcc5v0-usb-hub {
 		compatible = "regulator-fixed";
-		enable-active-high;
-		gpio = <&gpio0 RK_PD5 GPIO_ACTIVE_HIGH>;
-		pinctrl-names = "default";
-		pinctrl-0 = <&vcc5v0_usb_hub_en>;
+		// enable-active-high;
+		// gpio = <&gpio0 RK_PD5 GPIO_ACTIVE_HIGH>;
+		// pinctrl-names = "default";
+		// pinctrl-0 = <&vcc5v0_usb_hub_en>;
 		regulator-name = "vcc5v0_usb_hub";
 		regulator-always-on;
+		regulator-boot-on;
 		vin-supply = <&vcc5v0_usb>;
 	};
 
@@ -294,51 +282,16 @@
         >;
     };
 
-    soc {
-        #address-cells = <2>;
-        #size-cells = <2>;
-        ranges;
+	gpio_fan: gpio-fan {
+		compatible = "gpio-fan";
+		gpios = <&gpio0 RK_PD6 GPIO_ACTIVE_HIGH>;
+		gpio-fan,speed-map = <0    0>,
+		                     <3000 1>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&fan_en_h>;
+		#cooling-cells = <2>;
+	};
 
-        rknpu: npu@fde40000 {
-            compatible = "rockchip,rk3568-rknpu";
-            reg = <0x0 0xfde40000 0x0 0x10000>;
-
-            interrupts = <GIC_SPI 151 IRQ_TYPE_LEVEL_HIGH>;
-            interrupt-names = "rknpu";
-
-            clocks = <&cru CLK_NPU>,
-                     <&cru ACLK_NPU>,
-                     <&cru HCLK_NPU>;
-            clock-names = "clk", "aclk", "hclk";
-
-            resets = <&cru SRST_A_NPU>,
-                     <&cru SRST_H_NPU>;
-            reset-names = "srst_a", "srst_h";
-
-            power-domains = <&power RK3568_PD_NPU>;
-
-            iommus = <&rknpu_mmu>;
-
-            status = "okay";
-        };
-
-        rknpu_mmu: iommu@fde4b000 {
-            compatible = "rockchip,iommu-v2";
-            reg = <0x0 0xfde4b000 0x0 0x40>;
-
-            interrupts = <GIC_SPI 151 IRQ_TYPE_LEVEL_HIGH>;
-
-            clocks = <&cru ACLK_NPU>,
-                     <&cru HCLK_NPU>;
-            clock-names = "aclk", "iface";
-
-            power-domains = <&power RK3568_PD_NPU>;
-
-            #iommu-cells = <0>;
-
-            status = "okay";
-        };
-    };
 };
 
 &combphy0 {
@@ -499,9 +452,6 @@
 		pinctrl-0 = <&pmic_int>, <&i2s1m0_mclk>;
 		system-power-controller;
 		#sound-dai-cells = <0>;
-
-		spk-ctl-gpios = <&gpio4 RK_PC6 GPIO_ACTIVE_HIGH>;
-
 		vcc1-supply = <&vcc3v3_sys>;
 		vcc2-supply = <&vcc3v3_sys>;
 		vcc3-supply = <&vcc3v3_sys>;
@@ -700,8 +650,6 @@
 				};
 			};
 		};
-
-
 	};
 };
 
@@ -720,6 +668,9 @@
 
 &i2c5 {
 	status = "okay";
+	pinctrl-names = "default";
+	/* Combines the I2C bus pins and your RTC interrupt pin */
+	pinctrl-0 = <&i2c5m0_xfer &hym8563_int>; 
 
 	hym8563: rtc@51 {
 		compatible = "haoyu,hym8563";
@@ -727,19 +678,8 @@
 		interrupt-parent = <&gpio0>;
 		interrupts = <RK_PD3 IRQ_TYPE_LEVEL_LOW>;
 		#clock-cells = <0>;
-		clock-output-names = "rtcic_32kout";
-		pinctrl-names = "default";
-		pinctrl-0 = <&hym8563_int>;
 		wakeup-source;
 	};
-	/* not on this board
-    mxc6655xa: accelerometer@15 {
-        compatible = "mxc,mxc6655xa";
-        reg = <0x15>;
-        status = "disabled";
-    };
-	*/
-
 };
 
 &i2s0_8ch {
@@ -778,6 +718,23 @@
 	reset-gpios = <&gpio2 RK_PD6 GPIO_ACTIVE_HIGH>;
 	vpcie3v3-supply = <&vcc3v3_pcie>;
 	status = "okay";
+};
+
+&cpu_thermal {
+	trips {
+		cpu_fan_tick: cpu-fan-tick {
+			temperature = <60000>; 
+			hysteresis = <5000>;  
+			type = "active";
+		};
+	};
+
+	cooling-maps {
+		map_fan: map-fan {
+			trip = <&cpu_fan_tick>;
+			cooling-device = <&gpio_fan THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+		};
+	};
 };
 
 &pinctrl {
@@ -830,14 +787,12 @@
 	};
 
 	usb {
-		vcc5v0_usb_host_en: vcc5v0_usb_host_en {
-			rockchip,pins = <0 RK_PA6 RK_FUNC_GPIO &pcfg_pull_none>;
-		};
-		vcc5v0_usb_hub_en: vcc5v0_usb_hub_en {
-			rockchip,pins = <0 RK_PD5 RK_FUNC_GPIO &pcfg_pull_none>;
-		};
-		vcc5v0_usb_otg_en: vcc5v0_usb_otg_en {
+		vcc5v0_usb_otg_en: vcc5v0-usb-otg-en {
 			rockchip,pins = <0 RK_PA5 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+
+		vcc5v0_usb_host_en: vcc5v0-usb-host-en {
+			rockchip,pins = <0 RK_PA6 RK_FUNC_GPIO &pcfg_pull_none>;
 		};
 	};
 
@@ -870,6 +825,13 @@
 			rockchip,pins = <0 RK_PC6 RK_FUNC_GPIO &pcfg_pull_none>;
 		};
 	};
+
+	fan {
+        fan_en_h: fan-en-h {
+            rockchip,pins = <0 RK_PD6 RK_FUNC_GPIO &pcfg_pull_none>;
+        };
+    };
+
 };
 
 &pmu_io_domains {
@@ -961,9 +923,10 @@
 &uart8 {
 	status = "okay";
 	pinctrl-names = "default";
-	pinctrl-0 = <&uart8m0_xfer &uart8m0_ctsn>;
+	pinctrl-0 = <&uart8m0_xfer &uart8m0_ctsn>; // rts conflicts w eth0
+	// uart-has-rtscts; //enabled by def
 	dma-names = "tx", "rx";
-	
+
 	bluetooth {
         compatible = "realtek,rtl8822cs-bt";
         clocks = <&rk809 1>;
@@ -971,11 +934,10 @@
         enable-gpios = <&gpio3 RK_PA0 GPIO_ACTIVE_HIGH>;
         device-wake-gpios = <&gpio3 RK_PA1 GPIO_ACTIVE_HIGH>;
         host-wake-gpios = <&gpio3 RK_PA2 GPIO_ACTIVE_HIGH>;
-		max-speed = <1500000>;
+		max-speed = <1500000>; //prvent out of order messages
         pinctrl-names = "default";
         pinctrl-0 = <&bt_enable_h &bt_wake_h &bt_host_wake_h>;
     };
-	
 };
 
 &uart9 {
@@ -1173,3 +1135,4 @@
 	pinctrl-0 = <&i2c4m1_xfer>;
 	status = "disabled";
 };
+
