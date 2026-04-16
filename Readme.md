@@ -28,6 +28,8 @@ For Armbian build, place the patch in build/userpatches/kernel/archive/rockchip6
 * JTAG Debug
 * Bluetooth
 * NPU (not tested - not supported by 6.19RC4)
+* Fan Header
+* RTC Battery connection (not fully tested)
 
 # Not Working
 * Mipi-csi camara (need adapter or supported 40 pin camera)
@@ -35,8 +37,6 @@ For Armbian build, place the patch in build/userpatches/kernel/archive/rockchip6
 * SIM card (unknown)
 * Gyroscope (not on board?)
 * Headset auto detection (not wired?)
-* Fan header
-* RTC battery
 * Speaker Connector (not tested)
 
 
@@ -49,3 +49,24 @@ CONFIG_ACCEL_ROCKET=y
 CONFIG_ACCEL_ROCKET_RK3568=y
 Not supported for rk3568 as of 6.19 RC4.
 
+#Armbian-Install Not Detecting EMMC
+*As of 4-15-2026 Armbian Edge armbian-install may not detect the emmc. It seems to look for specific type and wont work if the emmc has been wiped.
+*Possible fix.
+**Boot from SD
+**Wipe the emmc and nvme
+**Lable the disks and create a partiion
+**Partprobe
+**Run armbian-install
+*
+sudo wipefs -a /dev/mmcblk0
+sudo wipefs -a /dev/nvme0n1
+
+sudo parted /dev/mmcblk0 mklabel gpt
+sudo parted /dev/mmcblk0 mkpart primary ext4 0% 100%
+
+sudo parted /dev/nvme0n1 mklabel gpt
+sudo parted /dev/nvme0n1 mkpart primary ext4 0% 100%
+
+sudo partprobe /dev/mmcblk0
+sudo partprobe /dev/nvme0n1
+*
