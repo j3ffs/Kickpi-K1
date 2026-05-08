@@ -27,11 +27,11 @@ For Armbian build, place the patch in build/userpatches/kernel/archive/rockchip6
 * GPU
 * JTAG Debug
 * Bluetooth
-* NPU (not tested - not supported by 6.19RC4)
 * Fan Header
 * RTC Battery connection (not fully tested)
 
 # Not Working
+* NPU (not tested - not supported by 6.19RC4)
 * Mipi-csi camara (need adapter or supported 40 pin camera)
 * Other display connections
 * SIM card (unknown)
